@@ -2,37 +2,28 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone') {
+        stage('Clone Repository') {
             steps {
                 git url: 'https://github.com/GauravN03/github_practice_arcap_new.git', branch: 'master'
             }
         }
 
-        stage('Build') {
+        stage('Run Python Script') {
             steps {
-                sh 'echo Building your project...'
-                // Add your build commands here
+                sh '''
+                echo "Running backend.py..."
+                python3 backend.py
+                '''
             }
         }
+    }
 
-        stage('Deploy') {
-            steps {
-                sshPublisher(publishers: [
-                    sshPublisherDesc(
-                        configName: 'EC2-Server',
-                        transfers: [
-                            sshTransfer(
-                                sourceFiles: '**',
-                                remoteDirectory: '/home/ec2-user/app',
-                                removePrefix: '',
-                                execCommand: 'bash deploy.sh'
-                            )
-                        ],
-                        usePromotionTimestamp: false,
-                        verbose: true
-                    )
-                ])
-            }
+    post {
+        success {
+            echo '✅ Python script executed successfully!'
+        }
+        failure {
+            echo '❌ Execution failed. Check logs for details.'
         }
     }
 }
